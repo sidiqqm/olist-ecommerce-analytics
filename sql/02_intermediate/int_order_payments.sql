@@ -19,13 +19,13 @@ with flag as (
             else false
         end as is_installment,
         
-        CASE
+        case
             when payment_installments = 1 then '1 - Full Payment'
             when payment_installments <= 3 then '2-3 - Short Term'
             when payment_installments <= 6 then '4-6 - Medium Term'
             when payment_installments <= 12 then '7-12 - Long Term'
             else '12+ - Extended'
-        END as installment_category
+        end as installment_category
 
     from `olist-ecommerce-analytics-1.olist_staging.stg_order_payments`
 )
