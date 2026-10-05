@@ -1,5 +1,3 @@
--- customer_id	customer_unique_id	customer_zip_code_prefix	customer_city	customer_state
-
 create or replace view `olist-ecommerce-analytics-1.olist_staging.stg_customers` as
 
 select

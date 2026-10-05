@@ -1,9 +1,14 @@
-
-create or replace view `your-project-id.olist_staging.stg_sellers` as
+create or replace view `olist-ecommerce-analytics-1.olist_staging.stg_sellers` as
 
 with city_alias as (
-    select * from unnest([
-        struct('sao paulop' as alias, 'sao paulo' as canonical, cast(null as STRING) as required_state),
+
+    select *
+    from unnest([
+        struct(
+            'sao paulop' as alias,
+            'sao paulo' as canonical,
+            cast(null as string) as required_state
+        ),
         struct('sao pauo', 'sao paulo', null),
         struct('sao paluo', 'sao paulo', null),
         struct('sao pauolo', 'sao paulo', null),
@@ -12,7 +17,7 @@ with city_alias as (
         struct('sbc', 'sao bernardo do campo', null),
         struct('ao bernardo do campo', 'sao bernardo do campo', null),
         struct('sao bernardo do capo', 'sao bernardo do campo', null),
-        struct('garulhos', 'guarulhos',  null),
+        struct('garulhos', 'guarulhos', null),
         struct('tabao da serra', 'taboao da serra', null),
         struct('mogi das cruses', 'mogi das cruzes', null),
         struct('sando andre', 'santo andre', null),
@@ -24,115 +29,168 @@ with city_alias as (
         struct('s jose do rio preto', 'sao jose do rio preto', null),
         struct('sao jose do rio pret', 'sao jose do rio preto', null)
     ])
+
 ),
- 
--- Langkah 1: lowercase, trim, hapus aksen, samakan tanda apostrof, rapikan spasi ganda
+
 normalized as (
+
     select
         seller_id,
+
         seller_zip_code_prefix,
+
         seller_city as seller_city_raw,
-        upper(trim(seller_state))    as seller_state,
+
+        upper(trim(seller_state)) as seller_state,
+
         regexp_replace(
             regexp_replace(
                 regexp_replace(
-                    lower(normalize(trim(seller_city), NFD)),
-                    r'\p{M}', ''                            -- hapus aksen: são -> sao
+                    lower(
+                        normalize(
+                            trim(seller_city),
+                            NFD
+                        )
+                    ),
+                    r'\p{M}',
+                    ''
                 ),
-                r"[´`’‘']", ' '                             -- d´oeste, d'oeste, d oeste -> d oeste
+                r"[´`’‘']",
+                ' '
             ),
-            r'\s+', ' '                                     -- "sao  paulo" -> "sao paulo"
-        )                                                   as city_norm
-    from `unnest-project-id.olist_raw.raw_sellers`
+            r'\s+',
+            ' '
+        ) as city_norm
+
+    from `olist-ecommerce-analytics-1.olist_raw.raw_sellers`
+
 ),
- 
--- Langkah 2: buang sufiks "/ sp", "- sp", "/ sao paulo", dan kode state di akhir nama
+
 suffix_removed as (
+
     select
         *,
-        -- ambil bagian sebelum "/" atau " - "
-        trim(split(regexp_replace(city_norm, r'\s+-\s+', '/'), '/')[offset(0)]) as city_main
-    from unnest
+
+        trim(
+            split(
+                regexp_replace(
+                    city_norm,
+                    r'\s+-\s+',
+                    '/'
+                ),
+                '/'
+            )[offset(0)]
+        ) as city_main
+
+    from normalized
+
 ),
- 
+
 stripped as (
+
     select
         *,
-        -- buang kode state di akhir nama jika sama dengan state baris itu
-        -- ("sao paulo sp" di state SP -> "sao paulo", "aguas claras df" di state DF -> "aguas claras")
+
         nullif(
             trim(
-                if(
-                    seller_state is null,
-                    city_main,
-                    regexp_replace(city_main, concat(r'\s+', lower(normalize), r'$'), '')
-                )
+                case
+                    when seller_state is null then city_main
+
+                    else regexp_replace(
+                        city_main,
+                        concat(
+                            r'\s+',
+                            lower(
+                                normalize(
+                                    seller_state,
+                                    NFD
+                                )
+                            ),
+                            r'$'
+                        ),
+                        ''
+                    )
+                end
             ),
             ''
         ) as city_stripped
-    from unnest
+
+    from suffix_removed
+
 ),
- 
--- Langkah 3: terapkan tabel alias (typo / singkatan)
+
 city_cleaned as (
+
     select
         s.*,
-        coalesce(a.canonical, s.city_stripped) as city_final
-    from unnest s
-    left join city_alias a
-        on  s.city_stripped = a.alias
-        and (a.required_state is null or a.required_state = s.seller_state)
+
+        coalesce(
+            a.canonical,
+            s.city_stripped
+        ) as city_final
+
+    from stripped as s
+
+    left join city_alias as a
+        on s.city_stripped = a.alias
+        and (
+            a.required_state is null
+            or a.required_state = s.seller_state
+        )
+
 )
- 
+
 select
     seller_id,
- 
+
     lpad(
-        cast(seller_zip_code_prefix as STRING),
+        cast(seller_zip_code_prefix as string),
         5,
         '0'
     ) as seller_zip_code_prefix,
- 
+
     seller_city_raw,
+
     city_final as seller_city,
- 
-    coalesce(city_final != lower(normalize(seller_city_raw)), FALSE) as is_city_standardized,
- 
+
+    coalesce(
+        city_final != city_norm,
+        false
+    ) as is_city_standardized,
+
     seller_state,
- 
-case
-    when seller_state IN ('SP', 'RJ', 'MG', 'ES')
-        then 'Southeast'
 
-    when seller_state IN ('RS', 'SC', 'PR')
-        then 'South'
+    case
+        when seller_state in ('SP', 'RJ', 'MG', 'ES')
+            then 'Southeast'
 
-    when seller_state IN ('MT', 'MS', 'GO', 'DF')
-        then 'Center-West'
+        when seller_state in ('RS', 'SC', 'PR')
+            then 'South'
 
-    when seller_state IN (
-        'BA', 'CE', 'PE', 'MA', 'PB',
-        'RN', 'PI', 'AL', 'SE'
-    )
-        then 'Northeast'
+        when seller_state in ('MT', 'MS', 'GO', 'DF')
+            then 'Center-West'
 
-    when seller_state IN (
-        'AM', 'PA', 'RO', 'AC',
-        'AP', 'RR', 'TO'
-    )
-        then 'North'
+        when seller_state in (
+            'BA', 'CE', 'PE', 'MA', 'PB',
+            'RN', 'PI', 'AL', 'SE'
+        )
+            then 'Northeast'
 
-    else 'Unknown'
-end as seller_region
-    -- level STATE (semua seller di negara bagian SP), nama dipertahankan agar tidak merusak downstream
-    coalesce(seller_state = 'SP', FALSE) as is_sao_paulo_seller,
- 
-    -- level KOTA (hanya seller di kota Sao Paulo)
-    coalesce(city_final = 'sao paulo', FALSE) as is_sao_paulo_city
- 
-from unnest;
- 
- 
+        when seller_state in (
+            'AM', 'PA', 'RO', 'AC',
+            'AP', 'RR', 'TO'
+        )
+            then 'North'
+
+        else 'Unknown'
+    end as seller_region,
+
+    seller_state = 'SP' as is_sao_paulo_seller,
+
+    city_final = 'sao paulo' as is_sao_paulo_city
+
+from city_cleaned
+
 -- =====================================================================
 -- Query validasi (jalankan manual setelah view dibuat):
 --

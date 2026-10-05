@@ -1,5 +1,3 @@
--- order_id	payment_sequential	payment_type	payment_installments	payment_value
-
 create or replace view `olist-ecommerce-analytics-1.olist_staging.stg_order_payments` as
 
 select
