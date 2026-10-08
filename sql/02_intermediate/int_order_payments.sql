@@ -6,6 +6,7 @@ with flag as (
         payment_sequential,
         payment_type,
         payment_installments,
+        payment_value,
         
         payment_sequential = 1 as is_primary_payment,
         case
