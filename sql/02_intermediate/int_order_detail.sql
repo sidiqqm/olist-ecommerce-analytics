@@ -19,7 +19,7 @@
 -- ============================================================
 
 create or replace table
-    `your-project-id.olist_intermediate.int_order_details`
+    `olist-ecommerce-analytics-1.olist_intermediate.int_order_details`
 
 partition by purchase_date
 cluster by order_status, product_id
