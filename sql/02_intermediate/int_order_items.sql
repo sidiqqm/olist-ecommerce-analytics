@@ -2,11 +2,7 @@ create or replace view `olist-ecommerce-analytics-1.olist_intermediate.int_order
 
 with metrics as (
     select 
-        order_id,
-        product_id,
-        order_item_id,
-        price,
-        freight_value,
+        *,
 
         price + freight_value as item_gmv,
 

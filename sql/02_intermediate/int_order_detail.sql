@@ -40,8 +40,8 @@ with joined as (
         o.order_status,
 
         o.is_revenue_generating,
-        o.is_on_time_delivery,
-        o.is_delivery_date_anomaly,
+        o.is_ontime_delivery,
+        o.is_order_date_anomaly,
 
         o.order_purchase_timestamp,
         o.order_approved_at,
@@ -54,8 +54,8 @@ with joined as (
         o.purchase_date,
 
         o.purchase_to_delivery_days,
-        o.delivery_vs_estimate_days,
-        o.purchase_to_approval_days,
+        o.delivery_vs_estimated_days,
+        o.purchase_to_approved_hours,
 
         c.customer_unique_id,
         c.customer_zip_code_prefix,
@@ -75,7 +75,6 @@ with joined as (
         cat.product_super_category,
 
         p.product_weight_g,
-        p.product_weight_kg,
 
         p.product_length_cm,
         p.product_height_cm,
@@ -97,9 +96,9 @@ with joined as (
         oi.is_free_shipping,
         oi.is_zero_or_negative_price
 
-    from `olist-ecommerce-analytics-1.olist_staging.stg_order_items` oi
+    from `olist-ecommerce-analytics-1.olist_intermediate.int_order_items` oi
 
-    inner join `olist-ecommerce-analytics-1.olist_staging.stg_orders` o
+    inner join `olist-ecommerce-analytics-1.olist_intermediate.int_orders` o
         on oi.order_id = o.order_id
 
     left join `olist-ecommerce-analytics-1.olist_staging.stg_customers` c
@@ -108,7 +107,7 @@ with joined as (
     left join `olist-ecommerce-analytics-1.olist_staging.stg_sellers` s
         on oi.seller_id = s.seller_id
 
-    left join `olist-ecommerce-analytics-1.olist_staging.stg_products` p
+    left join `olist-ecommerce-analytics-1.olist_intermediate.int_products` p
         on oi.product_id = p.product_id
 
     left join
