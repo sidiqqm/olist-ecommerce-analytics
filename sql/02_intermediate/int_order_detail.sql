@@ -29,20 +29,23 @@ as
 with joined as (
 
     select
+
+        -- Order Item identifiers
         oi.order_id,
         oi.order_item_id,
 
         oi.product_id,
         oi.seller_id,
 
+        -- Orders attributes
         o.customer_id,
-
         o.order_status,
 
         o.is_revenue_generating,
         o.is_ontime_delivery,
         o.is_order_date_anomaly,
 
+        -- Timtestamps
         o.order_purchase_timestamp,
         o.order_approved_at,
         o.order_delivered_carrier_date,
@@ -51,50 +54,64 @@ with joined as (
 
         oi.shipping_limit_date,
 
+        -- Date Dimensions
         o.purchase_date,
-
+        o.purchase_year,
+        o.purchase_month,
+        o.purchase_day,
+        o.purchase_day_of_week,
+        o.purchase_year_month,
+        o.purchase_year_quarter,
+        
+        -- Delivery metrics
         o.purchase_to_delivery_days,
         o.delivery_vs_estimated_days,
         o.purchase_to_approved_hours,
+        
 
+        -- Customer attributes
         c.customer_unique_id,
         c.customer_zip_code_prefix,
         c.customer_city,
         c.customer_state,
         c.customer_region,
 
+        -- Seller atrributes
         s.seller_zip_code_prefix,
         s.seller_city,
         s.seller_state,
         s.seller_region,
         s.is_sao_paulo_seller,
 
+        -- Product attributes
         p.product_category_name,
-
         cat.product_category_name_english,
         cat.product_super_category,
-
         p.product_weight_g,
-
+        p.product_weight_kg,
         p.product_length_cm,
         p.product_height_cm,
         p.product_width_cm,
-
         p.volumetric_weight_kg,
-
         p.has_photos as product_has_photos,
-        p.has_weight,
         p.has_complete_dimensions,
-        p.is_unknown_category,
-
+        
+        -- Financial measures
         oi.price,
         oi.freight_value,
         oi.item_gmv,
-
         oi.freight_to_price_pct,
-
         oi.is_free_shipping,
-        oi.is_zero_or_negative_price
+        oi.is_zero_or_negative_price,
+
+        -- Review attributes
+        r.review_id,
+        r.review_score,
+        r.review_sentiment,
+        r.review_score_label,
+        r.has_comment,
+        r.minutes_to_respond
+        
 
     from `olist-ecommerce-analytics-1.olist_intermediate.int_order_items` oi
 
@@ -110,6 +127,13 @@ with joined as (
     left join `olist-ecommerce-analytics-1.olist_intermediate.int_products` p
         on oi.product_id = p.product_id
 
+    left join
+        `olist-ecommerce-analytics-1.olist_staging.stg_product_category_translation` cat
+        on p.product_category_name = cat.product_category_name
+    
+    left join
+        `olist-ecommerce-analytics-1.olist_intermediate.int_order_reviews` r
+        on oi.order_id = r.order_id
     left join
         `olist-ecommerce-analytics-1.olist_staging.stg_product_category_translation` cat
         on p.product_category_name = cat.product_category_name
