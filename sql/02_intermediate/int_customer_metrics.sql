@@ -50,7 +50,7 @@ customer_orders AS (
         COALESCE(oi.item_count_per_order, 0) AS item_count_per_order
 
     FROM
-        `olist-ecommerce-analytics-1.olist_int.int_orders` AS o
+        `olist-ecommerce-analytics-1.olist_intermediate.int_orders` AS o
 
     INNER JOIN
         `olist-ecommerce-analytics-1.olist_staging.stg_customers` AS c
@@ -238,7 +238,14 @@ rfm_segmented AS (
 
             ELSE 'Others'
 
-        END AS rfm_segment
+        END AS rfm_segment,
+
+        CASE
+            WHEN total_clv IS NULL THEN 'Unknown'
+            WHEN total_clv >= 1000 THEN 'High Value'
+            WHEN total_clv >= 300 THEN 'Medium Value'
+            ELSE 'Low Value'
+        END AS clv_tier
 
     FROM rfm_scored
 

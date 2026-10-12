@@ -9,10 +9,6 @@ base AS (
     FROM `olist-ecommerce-analytics-1.olist_raw.raw_product_category_translation`
 ),
 
--- Tambahkan baris 'unknown' untuk handle produk tanpa kategori
--- Alasan: Di stg_products, NULL category sudah di-COALESCE ke 'unknown'
--- Agar join ke tabel ini tidak menghasilkan NULL pada category English,
--- kita tambahkan mapping 'unknown' → 'Unknown Category'
 with_unknown AS (
     SELECT * FROM base
 
@@ -27,9 +23,6 @@ SELECT
     product_category_name,
     product_category_name_english,
 
-    -- DERIVED: High-level category grouping
-    -- Bisnis: 73 kategori terlalu banyak untuk beberapa visualisasi.
-    -- Kita buat super-category untuk executive dashboard.
     CASE
         WHEN product_category_name_english IN (
             'bed_bath_table', 'furniture_decoration', 'home_confort',

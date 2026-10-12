@@ -1,4 +1,3 @@
-sql
 CREATE OR REPLACE TABLE
   `olist-ecommerce-analytics-1.olist_mart.dim_products`
 AS
@@ -32,7 +31,7 @@ SELECT
     p.listing_quality_score
 
 FROM
-  `olist-ecommerce-analytics-1.olist_intermediate.int_products` p
+  `olist-ecommerce-analytics-1.olist_intermediate.int_products_metrics` p
 
 LEFT JOIN
   `olist-ecommerce-analytics-1.olist_staging.stg_product_category_translation` cat
