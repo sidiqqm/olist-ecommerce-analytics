@@ -1,178 +1,195 @@
 
-CREATE OR REPLACE TABLE `olist-ecommerce-analytics-1.olist_intermediate.int_sellers_metrics` AS
+CREATE OR REPLACE TABLE
+    `olist-ecommerce-analytics-1.olist_reporting.rpt_seller_performance`
+CLUSTER BY seller_tier, seller_state
+AS
 
-WITH base_items AS (
+WITH
+
+
+-- GRAIN: 1 row per seller_id + order_id
+seller_review_base AS (
     SELECT
         seller_id,
         order_id,
-        product_id,
-        order_item_id,
-        customer_unique_id,
-        purchase_date,
-        price,
-        freight_value,
-        item_gmv,
-        order_delivered_customer_date,
-        purchase_to_approved_hours,
-        purchase_to_delivery_days,
-        is_ontime_delivery,
-        is_order_date_anomaly
-    FROM `olist-ecommerce-analytics-1.olist_intermediate.int_order_details`
-    WHERE is_revenue_generating = TRUE
-),
+        review_score
+    FROM `olist-ecommerce-analytics-1.olist_mart.fact_order_items`
+    WHERE is_revenue_generating IS TRUE
 
-seller_orders AS (
-    SELECT
-        seller_id,
-        order_id,
-        customer_unique_id,
-        purchase_date,
-        order_delivered_customer_date,
-        purchase_to_approved_hours,
-        purchase_to_delivery_days,
-        is_ontime_delivery,
-        is_order_date_anomaly
-    FROM base_items
     QUALIFY ROW_NUMBER() OVER (
         PARTITION BY seller_id, order_id
         ORDER BY order_item_id
     ) = 1
 ),
 
-seller_order_metrics AS (
+
+-- GRAIN: 1 row per seller_id
+seller_review_metrics AS (
     SELECT
         seller_id,
-        COUNT(*) AS total_orders,
-        COUNT(DISTINCT customer_unique_id) AS unique_customers,
 
-        ROUND(
-            AVG(
-                CASE
-                    WHEN order_delivered_customer_date IS NOT NULL
-                        AND is_order_date_anomaly IS NOT TRUE
-                    THEN purchase_to_delivery_days
-                END
-            ),
-            1
-        ) AS avg_purchase_to_delivery_days,
+        ROUND(AVG(review_score), 3) AS avg_review_score,
+
+        COUNTIF(review_score <= 2) AS negative_review_count,
+
+        COUNTIF(review_score IS NOT NULL) AS total_reviews
+
+    FROM seller_review_base
+    GROUP BY seller_id
+),
+
+
+-- GRAIN: 1 row per seller_id
+seller_activity AS (
+    SELECT
+        seller_id,
+
+        COUNT(
+            DISTINCT DATE_TRUNC(purchase_date, MONTH)
+        ) AS active_months
+
+    FROM `olist-ecommerce-analytics-1.olist_intermediate.int_order_details`
+    WHERE is_revenue_generating IS TRUE
+    GROUP BY seller_id
+),
+
+
+-- GRAIN: 1 row per seller_id
+seller_report_base AS (
+    SELECT
+        sm.seller_id,
+
+        sm.total_orders,
+        sm.total_items_sold,
+        sm.unique_products,
+        sm.unique_customers,
+
+        sm.total_revenue,
+        sm.total_gmv,
+        sm.avg_item_price,
+
+        sm.avg_delivery_days,
+        sm.seller_otdr_pct,
+
+        sm.first_sale_date,
+        sm.last_sale_date,
+
+        sm.seller_tier,
+        sm.is_active_seller,
+
+        COALESCE(sa.active_months, 0) AS active_months,
+
+        rm.avg_review_score,
+        COALESCE(rm.negative_review_count, 0)
+            AS negative_review_count,
+        COALESCE(rm.total_reviews, 0)
+            AS total_reviews
+
+    FROM `olist-ecommerce-analytics-1.olist_intermediate.int_sellers_metrics` AS sm
+
+    LEFT JOIN seller_activity AS sa
+        ON sm.seller_id = sa.seller_id
+
+    LEFT JOIN seller_review_metrics AS rm
+        ON sm.seller_id = rm.seller_id
+),
+
+
+-- Ranking berdasarkan total GMV
+seller_ranked AS (
+    SELECT
+        *,
+
+        RANK() OVER (
+            ORDER BY total_gmv DESC
+        ) AS revenue_rank,
 
         ROUND(
             SAFE_DIVIDE(
-                COUNTIF(is_ontime_delivery IS TRUE) * 100.0,
-                COUNTIF(is_ontime_delivery IS NOT NULL)
-            ),
+                SUM(total_gmv) OVER (
+                    ORDER BY total_gmv DESC, seller_id
+                    ROWS BETWEEN UNBOUNDED PRECEDING
+                    AND CURRENT ROW
+                ),
+                SUM(total_gmv) OVER ()
+            ) * 100,
             2
-        ) AS seller_otdr_pct
+        ) AS cumulative_gmv_pct
 
-    FROM seller_orders
-    GROUP BY seller_id
-),
-
-seller_item_metrics AS (
-    SELECT
-        seller_id,
-        COUNT(*) AS total_items_sold,
-        COUNT(DISTINCT product_id) AS unique_products,
-
-        ROUND(SUM(price), 2) AS total_revenue,
-        ROUND(SUM(item_gmv), 2) AS total_gmv,
-        ROUND(AVG(price), 2) AS avg_item_price,
-
-        MIN(purchase_date) AS first_order_date,
-        MAX(purchase_date) AS last_order_date
-
-    FROM base_items
-    GROUP BY seller_id
-),
-
-seller_metrics AS (
-    SELECT
-        so.seller_id,
-
-        so.total_orders,
-        so.unique_customers,
-
-        si.total_items_sold,
-        si.unique_products,
-
-        si.total_revenue,
-        si.total_gmv,
-        si.avg_item_price,
-
-        si.first_order_date,
-        si.last_order_date,
-
-        so.avg_purchase_to_delivery_days,
-        so.seller_otdr_pct
-
-    FROM seller_order_metrics AS so
-    INNER JOIN seller_item_metrics AS si
-        ON so.seller_id = si.seller_id
-),
-
-seller_ranked AS (
-    SELECT
-        seller_id,
-
-        total_orders,
-        unique_customers,
-
-        total_items_sold,
-        unique_products,
-
-        total_revenue,
-        total_gmv,
-        avg_item_price,
-
-        first_order_date,
-        last_order_date,
-
-        avg_purchase_to_delivery_days,
-        seller_otdr_pct,
-
-        PERCENT_RANK() OVER (
-            ORDER BY total_revenue ASC
-        ) AS revenue_percentile,
-
-        RANK() OVER (
-            ORDER BY total_orders DESC
-        ) AS order_rank
-
-    FROM seller_metrics
+    FROM seller_report_base
 )
 
+-- GRAIN: 1 row per seller_id
 SELECT
-    s.seller_id,
+    sr.seller_id,
 
-    COALESCE(sr.total_orders, 0) AS total_orders,
-    COALESCE(sr.total_items_sold, 0) AS total_items_sold,
-    COALESCE(sr.unique_products, 0) AS unique_products,
-    COALESCE(sr.unique_customers, 0) AS unique_customers,
-
-    COALESCE(sr.total_revenue, 0) AS total_revenue,
-    COALESCE(sr.total_gmv, 0) AS total_gmv,
-
+    -- Sales metrics
+    sr.total_orders,
+    sr.total_items_sold,
+    sr.unique_products,
+    sr.unique_customers,
+    ROUND(sr.total_revenue, 2) AS total_revenue,
+    ROUND(sr.total_gmv, 2) AS total_gmv,
     sr.avg_item_price,
-    sr.avg_purchase_to_delivery_days AS avg_delivery_days,
+
+    -- Review metrics
+    sr.avg_review_score,
+    sr.negative_review_count,
+    sr.total_reviews,
+
+    -- Delivery metrics
     sr.seller_otdr_pct,
+    sr.avg_delivery_days,
 
-    sr.first_order_date AS first_sale_date,
-    sr.last_order_date AS last_sale_date,
+    -- Activity metrics
+    sr.active_months,
+    sr.first_sale_date,
+    sr.last_sale_date,
+    sr.is_active_seller,
 
+    -- Ranking metrics
+    sr.revenue_rank,
+    sr.cumulative_gmv_pct,
+
+    -- Seller attributes
+    ds.seller_city,
+    ds.seller_state,
+    ds.seller_region,
+    ds.seller_state_name,
+    ds.seller_latitude,
+    ds.seller_longitude,
+    ds.is_sao_paulo_seller,
+
+    -- Tier from intermediate: one consistent source
+    sr.seller_tier,
+
+    -- Composite performance score
     CASE
-        WHEN sr.seller_id IS NULL
-            THEN 'Inactive'
-        WHEN sr.revenue_percentile >= 0.8
-            THEN 'Platinum'
-        WHEN sr.revenue_percentile >= 0.6
-            THEN 'Gold'
-        WHEN sr.revenue_percentile >= 0.4
-            THEN 'Silver'
-        ELSE 'Bronze'
-    END AS seller_tier,
+        WHEN sr.avg_review_score IS NULL
+          OR sr.seller_otdr_pct IS NULL
+        THEN NULL
 
-    sr.seller_id IS NOT NULL AS is_active_seller
+        ELSE ROUND(
+            LEAST(
+                GREATEST(sr.avg_review_score / 5.0, 0),
+                1
+            ) * 40
 
-FROM `olist-ecommerce-analytics-1.olist_staging.stg_sellers` AS s
-LEFT JOIN seller_ranked AS sr
-    ON s.seller_id = sr.seller_id;
+            + LEAST(
+                GREATEST(sr.seller_otdr_pct / 100.0, 0),
+                1
+            ) * 40
+
+            + LEAST(
+                GREATEST(sr.active_months / 24.0, 0),
+                1
+            ) * 20,
+
+            1
+        )
+    END AS performance_score
+
+FROM seller_ranked AS sr
+
+LEFT JOIN `olist-ecommerce-analytics-1.olist_mart.dim_sellers` AS ds
+    ON sr.seller_id = ds.seller_id;
