@@ -3,8 +3,6 @@
 **Project**: End-to-End Data Analyst Portfolio
 **Dataset**: Brazilian E-Commerce Public Dataset by Olist
 **Period**: September 2016 – September 2018
-**Author**: [Your Name]
-**Last Updated**: [Date]
 
 ---
 
@@ -153,30 +151,3 @@ mengoptimalkan ekosistem seller.
 
 ---
 
-## 9. Assumptions
-
-| ID | Asumsi | Justifikasi |
-|----|--------|-------------|
-| A-01 | 1 customer_unique_id = 1 individual customer | Dataset definition |
-| A-02 | Harga adalah harga final | Tidak ada field diskon |
-| A-03 | freight_value termasuk GMV | Bagian dari ekosistem revenue |
-| A-04 | Non-review = tidak ada review | Tidak bisa asumsikan sentimen |
-| A-05 | Timezone = America/Sao_Paulo | Mayoritas order dari SP |
-| A-06 | Canceled orders dieksklusi dari GMV | Bukan revenue aktual |
-| A-07 | Seller tanpa order = tidak aktif | Tidak ada data registrasi terpisah |
-| A-08 | Geolocation via 5-digit zip prefix | Sesuai struktur data |
-
----
-
-## 10. Risks & Limitations
-
-| ID | Risiko | Dampak | Mitigasi |
-|----|--------|--------|----------|
-| R-01 | Data mungkin di-anonymize | Medium | Fokus pattern, bukan individual |
-| R-02 | Missing values pada tanggal delivery | High | Dokumentasi exclusions |
-| R-03 | Tidak ada data COGS | High | Fokus GMV, bukan profit |
-| R-04 | Repeat rate mungkin sangat rendah | Medium | Interpretasi konteks market |
-| R-05 | Geolocation kurang akurat di zip level | Low | Gunakan state-level |
-| R-06 | Review score bisa bias (selection bias) | Medium | Cantumkan caveat |
-| R-07 | Data 2 tahun → forecast terbatas | Medium | Proyeksi max 6 bulan |
-| R-08 | Dataset berakhir 2018 | High | Cantumkan date scope |
