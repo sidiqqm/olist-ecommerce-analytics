@@ -38,7 +38,7 @@ base_items AS (
 ),
 
 -- 2. CATEGORY DIMENSION
--- Assumes each English category maps to one super category.
+-- GRAIN: 1 row per product category
 category_list AS (
     SELECT
         product_category_name_english,
@@ -54,9 +54,8 @@ monthly_item_metrics AS (
         product_category_name_english,
         month_start,
 
-        COUNT(
-            DISTINCT STRUCT(order_id, order_item_id)
-        ) AS total_items,
+        -- COUNT(*) is valid because base_items has item-level grain.
+        COUNT(*) AS total_items,
 
         COUNT(DISTINCT seller_id) AS unique_sellers,
 
@@ -74,8 +73,7 @@ monthly_item_metrics AS (
 
 -- 4. CATEGORY-ORDER BASE
 -- GRAIN: 1 row per order x category
--- Prevents repeated order-level review/delivery values
--- when an order contains multiple items in one category.
+-- Prevents repeated order-level review/delivery values.
 category_order_base AS (
     SELECT
         order_id,
@@ -103,18 +101,11 @@ monthly_order_metrics AS (
 
         COUNT(*) AS total_orders,
 
-        ROUND(
-            AVG(review_score),
-            3
-        ) AS avg_review_score,
+        ROUND(AVG(review_score), 3) AS avg_review_score,
 
-        COUNTIF(
-            review_score <= 2
-        ) AS negative_reviews,
+        COUNTIF(review_score <= 2) AS negative_reviews,
 
-        COUNTIF(
-            review_score IS NOT NULL
-        ) AS total_reviews,
+        COUNTIF(review_score IS NOT NULL) AS total_reviews,
 
         ROUND(
             AVG(
@@ -142,7 +133,6 @@ monthly_order_metrics AS (
 ),
 
 -- 6. MONTH CALENDAR
--- Includes months without sales for valid MoM comparisons.
 month_calendar AS (
     SELECT month_start
     FROM UNNEST(
@@ -155,7 +145,6 @@ month_calendar AS (
 ),
 
 -- 7. CATEGORY x MONTH SPINE
--- GRAIN: 1 row per category x calendar month
 category_month_spine AS (
     SELECT
         c.product_category_name_english,

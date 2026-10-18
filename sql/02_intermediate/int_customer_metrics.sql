@@ -1,24 +1,14 @@
 
--- ============================================================
--- TABLE: olist_intermediate.int_customer_metrics
 -- PURPOSE:
 --   Customer-level purchase metrics and RFM segmentation
---
 -- GRAIN:
 --   1 row per customer_unique_id
---
--- NOTES:
---   total_clv represents historical order value in this model,
---   not necessarily predictive Customer Lifetime Value.
--- ============================================================
-
 CREATE OR REPLACE TABLE
   `olist-ecommerce-analytics-1.olist_intermediate.int_customer_metrics`
 AS
 
 WITH order_item_summary AS (
 
-    -- Pastikan item diagregasi menjadi satu baris per order
     SELECT
         order_id,
         SUM(COALESCE(item_gmv, 0)) AS order_gmv,

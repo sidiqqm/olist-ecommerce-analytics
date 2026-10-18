@@ -1,4 +1,3 @@
-
 -- TABLE: olist_reporting.rpt_delivery_metrics
 -- PURPOSE: Monthly delivery performance by customer state
 -- GRAIN: 1 row per customer_state x year_month
@@ -15,7 +14,7 @@ WITH
 order_state_map AS (
     SELECT
         order_id,
-        ANY_VALUE(customer_state) AS customer_state
+        ANY_VALUE(customer_state) AS customer_states
     FROM
         `olist-ecommerce-analytics-1.olist_mart.fact_order_items`
     WHERE customer_state IS NOT NULL
@@ -28,7 +27,7 @@ order_state_map AS (
 order_base AS (
     SELECT
         fo.order_id,
-        osm.customer_state,
+        osm.customer_states as customer_state,
         fo.purchase_year_month AS year_month,
         fo.purchase_year AS year_actual,
 
@@ -53,7 +52,7 @@ order_base AS (
 -- SOURCE GRAIN: 1 row per order_id
 order_metrics AS (
     SELECT
-        customer_state,
+        upper(customser_state) AS customer_state,
         year_month,
         year_actual,
 
@@ -137,7 +136,7 @@ order_metrics AS (
 -- SOURCE GRAIN: 1 row per order item
 item_metrics AS (
     SELECT
-        ob.customer_state,
+        upper(ob.customer_state) as customer_state,
         ob.year_month,
 
         COUNT(foi.order_item_id) AS total_items,

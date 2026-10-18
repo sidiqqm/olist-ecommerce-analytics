@@ -18,14 +18,14 @@ WITH eligible_orders AS (
         total_freight_value,
         primary_payment_type,
         purchase_to_delivery_days,
-        is_on_time_delivery,
+        is_ontime_delivery,
         review_score,
         item_count
 
     FROM `olist-ecommerce-analytics-1.olist_mart.fact_orders`
 
     WHERE is_revenue_generating IS TRUE
-      AND is_delivery_date_anomaly IS FALSE
+      AND is_order_date_anomaly IS FALSE
 ),
 
 calendar_bounds AS (
@@ -94,8 +94,8 @@ monthly_metrics AS (
         ) AS avg_delivery_days_raw,
 
         SAFE_DIVIDE(
-            COUNTIF(is_on_time_delivery IS TRUE) * 100.0,
-            COUNTIF(is_on_time_delivery IS NOT NULL)
+            COUNTIF(is_ontime_delivery IS TRUE) * 100.0,
+            COUNTIF(is_ontime_delivery IS NOT NULL)
         ) AS otdr_pct_raw,
 
         -- Satisfaction

@@ -1,15 +1,7 @@
--- ============================================================
--- TABLE: olist_mart.dim_customers
 -- PURPOSE:
 --   Customer descriptive dimension
---
 -- GRAIN:
 --   1 row per customer_unique_id
---
--- DESIGN:
---   No aggregated purchase metrics or RFM scores.
---   Customer metrics remain in int_customer_metrics.
--- ============================================================
 
 CREATE OR REPLACE TABLE
   `olist-ecommerce-analytics-1.olist_mart.dim_customers`

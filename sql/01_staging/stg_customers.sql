@@ -7,7 +7,7 @@ select
         cast(customer_zip_code_prefix as STRING), 5, "0"
     ) as customer_zip_code_prefix,
     lower(trim(customer_city)) as customer_city,
-    lower(trim(customer_state)) as customer_state,
+    upper(trim(customer_state)) as customer_state,
     case
         when upper(trim(customer_state)) IN ('SP', 'RJ', 'MG', 'ES')
             THEN 'Southeast'
