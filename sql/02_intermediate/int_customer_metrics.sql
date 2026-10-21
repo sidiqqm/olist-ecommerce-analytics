@@ -189,7 +189,6 @@ rfm_segmented AS (
                 AND m_score >= 4
                 THEN 'Champions'
 
-            -- Diletakkan sebelum Loyal Customers
             WHEN r_score <= 2
                 AND f_score >= 4
                 AND m_score >= 4

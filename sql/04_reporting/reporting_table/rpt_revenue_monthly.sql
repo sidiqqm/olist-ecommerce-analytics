@@ -62,10 +62,10 @@ monthly_metrics AS (
             AS unique_customers,
 
         COUNTIF(customer_type = 'New Customer')
-            AS new_customer_orders,
+            AS new_customers,
 
         COUNTIF(customer_type = 'Returning Customer')
-            AS returning_customer_orders,
+            AS returning_customers,
 
         SUM(total_gmv) AS total_gmv_raw,
         SUM(total_price) AS total_product_revenue_raw,
@@ -123,11 +123,11 @@ monthly_complete AS (
         COALESCE(m.total_orders, 0) AS total_orders,
         COALESCE(m.unique_customers, 0) AS unique_customers,
 
-        COALESCE(m.new_customer_orders, 0)
-            AS new_customer_orders,
+        COALESCE(m.new_customers, 0)
+            AS new_customers,
 
-        COALESCE(m.returning_customer_orders, 0)
-            AS returning_customer_orders,
+        COALESCE(m.returning_customers, 0)
+            AS returning_customers,
 
         COALESCE(m.total_gmv_raw, 0) AS total_gmv_raw,
         COALESCE(m.total_product_revenue_raw, 0)
@@ -201,8 +201,8 @@ SELECT
 
     total_orders,
     unique_customers,
-    new_customer_orders,
-    returning_customer_orders,
+    new_customers,
+    returning_customers,
 
     ROUND(total_gmv_raw, 2) AS total_gmv,
 
