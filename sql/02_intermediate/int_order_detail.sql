@@ -60,14 +60,12 @@ reviews_deduped AS (
 
 joined AS (
     SELECT
-        -- ORDER ITEM IDENTIFIERS
         oi.order_id,
         oi.order_item_id,
         oi.product_id,
         oi.seller_id,
         o.customer_id,
 
-        -- ORDER ATTRIBUTES
         o.order_status,
         o.is_revenue_generating,
         o.is_delivered,
@@ -76,7 +74,6 @@ joined AS (
         o.is_ontime_delivery,
         o.is_order_date_anomaly,
 
-        -- TIMESTAMPS
         o.order_purchase_timestamp,
         o.order_approved_at,
         o.order_delivered_carrier_date,
@@ -84,7 +81,6 @@ joined AS (
         o.order_estimated_delivery_date,
         oi.shipping_limit_date,
 
-        -- DATE ATTRIBUTES
         o.purchase_date,
         o.purchase_year,
         o.purchase_month,
@@ -93,26 +89,22 @@ joined AS (
         o.purchase_year_month,
         o.purchase_year_quarter,
 
-        -- DELIVERY METRICS
         o.purchase_to_delivery_days,
         o.delivery_vs_estimated_days,
         o.purchase_to_approved_hours,
 
-        -- CUSTOMER ATTRIBUTES
         c.customer_unique_id,
         c.customer_zip_code_prefix,
         c.customer_city,
         c.customer_state,
         c.customer_region,
 
-        -- SELLER ATTRIBUTES
         s.seller_zip_code_prefix,
         s.seller_city,
         s.seller_state,
         s.seller_region,
         s.is_sao_paulo_seller,
 
-        -- PRODUCT ATTRIBUTES
         p.product_category_name,
         cat.product_category_name_english,
         cat.product_super_category,
@@ -121,7 +113,6 @@ joined AS (
         p.has_photos AS product_has_photos,
         p.has_complete_dimensions,
 
-        -- ITEM MEASURES
         oi.price,
         oi.freight_value,
         oi.item_gmv,
@@ -129,7 +120,6 @@ joined AS (
         oi.is_free_shipping,
         oi.is_zero_or_negative_price,
 
-        -- PAYMENT ATTRIBUTES
         pay.total_payment_value,
         pay.primary_payment_type,
         pay.max_installments,
@@ -138,7 +128,6 @@ joined AS (
         pay.payment_record_count,
         pay.payment_type_count,
 
-        -- REVIEW ATTRIBUTES
         rev.review_score,
         rev.review_sentiment,
         rev.review_score_label,

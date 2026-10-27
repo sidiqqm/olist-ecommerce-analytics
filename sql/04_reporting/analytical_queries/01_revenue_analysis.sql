@@ -350,8 +350,6 @@ state_revenue AS (
 
         ROUND(AVG(f.total_gmv), 2) AS aov,
 
-        -- Hapus metrik ini jika review_score tidak
-        -- tersedia di fact_orders.
         ROUND(AVG(f.review_score), 2) AS avg_review_score
 
     FROM `olist-ecommerce-analytics-1.olist_mart.fact_orders` f

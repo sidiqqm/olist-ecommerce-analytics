@@ -1,4 +1,3 @@
--- TABLE: olist_reporting.rpt_delivery_metrics
 -- PURPOSE: Monthly delivery performance by customer state
 -- GRAIN: 1 row per customer_state x year_month
 
@@ -165,7 +164,7 @@ item_metrics AS (
 ),
 
 -- 5. STATE GEOGRAPHY
--- EXPECTED GRAIN: 1 row per state_code
+-- 1 row per state_code
 geo_state AS (
     SELECT
         state_code,
@@ -180,8 +179,6 @@ geo_state AS (
     GROUP BY state_code
 )
 
--- 6. FINAL REPORT
--- GRAIN: 1 row per customer_state x year_month
 SELECT
     om.customer_state,
     om.year_month,

@@ -54,7 +54,6 @@ monthly_item_metrics AS (
         product_category_name_english,
         month_start,
 
-        -- COUNT(*) is valid because base_items has item-level grain.
         COUNT(*) AS total_items,
 
         COUNT(DISTINCT seller_id) AS unique_sellers,
@@ -73,7 +72,6 @@ monthly_item_metrics AS (
 
 -- 4. CATEGORY-ORDER BASE
 -- GRAIN: 1 row per order x category
--- Prevents repeated order-level review/delivery values.
 category_order_base AS (
     SELECT
         order_id,
@@ -132,7 +130,6 @@ monthly_order_metrics AS (
         month_start
 ),
 
--- 6. MONTH CALENDAR
 month_calendar AS (
     SELECT month_start
     FROM UNNEST(
@@ -144,7 +141,6 @@ month_calendar AS (
     ) AS month_start
 ),
 
--- 7. CATEGORY x MONTH SPINE
 category_month_spine AS (
     SELECT
         c.product_category_name_english,
@@ -155,7 +151,6 @@ category_month_spine AS (
     CROSS JOIN month_calendar AS m
 ),
 
--- 8. COMBINE MONTHLY METRICS
 monthly_category AS (
     SELECT
         s.product_category_name_english,
@@ -194,7 +189,6 @@ monthly_category AS (
        AND s.month_start = om.month_start
 ),
 
--- 9. MONTH-OVER-MONTH COMPARISON AND CATEGORY RANKING
 with_growth AS (
     SELECT
         *,
@@ -212,7 +206,6 @@ with_growth AS (
     FROM monthly_category
 )
 
--- 10. FINAL REPORT
 SELECT
     *,
 

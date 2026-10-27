@@ -71,7 +71,6 @@ monthly_metrics AS (
         SUM(total_price) AS total_product_revenue_raw,
         SUM(total_freight_value) AS total_freight_revenue_raw,
 
-        -- Payment
         COUNTIF(primary_payment_type = 'credit_card')
             AS credit_card_orders,
 
@@ -84,7 +83,6 @@ monthly_metrics AS (
         COUNTIF(primary_payment_type = 'debit_card')
             AS debit_card_orders,
 
-        -- Delivery
         AVG(
             IF(
                 purchase_to_delivery_days >= 0,
@@ -98,14 +96,12 @@ monthly_metrics AS (
             COUNTIF(is_ontime_delivery IS NOT NULL)
         ) AS otdr_pct_raw,
 
-        -- Satisfaction
         AVG(review_score) AS avg_review_score_raw,
 
         COUNTIF(review_score >= 4) AS positive_reviews,
         COUNTIF(review_score <= 2) AS negative_reviews,
         COUNTIF(review_score IS NOT NULL) AS total_reviews,
 
-        -- Items
         SUM(item_count) AS total_items_sold_raw,
         AVG(item_count) AS avg_items_per_order_raw
 
@@ -177,14 +173,12 @@ with_growth AS (
             ORDER BY month_start
         ) AS same_month_last_year_orders,
 
-        -- Cumulative GMV
         SUM(total_gmv_raw) OVER (
             ORDER BY month_start
             ROWS BETWEEN UNBOUNDED PRECEDING
             AND CURRENT ROW
         ) AS cumulative_gmv_raw,
 
-        -- Three calendar-month average, including zero-order months
         AVG(total_gmv_raw) OVER (
             ORDER BY month_start
             ROWS BETWEEN 2 PRECEDING AND CURRENT ROW

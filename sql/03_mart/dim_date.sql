@@ -22,10 +22,8 @@ SELECT
     CAST(FORMAT_DATE('%Y%m%d', date_actual) AS INT64) AS date_key,
     date_actual,
 
-    -- Year attributes
     EXTRACT(YEAR FROM date_actual) AS year,
 
-    -- Quarter attributes
     EXTRACT(QUARTER FROM date_actual) AS quarter,
 
     CONCAT(
@@ -39,18 +37,15 @@ SELECT
         CAST(EXTRACT(QUARTER FROM date_actual) AS STRING)
     ) AS quarter_year,
 
-    -- Month attributes
     EXTRACT(MONTH FROM date_actual) AS month_actual,
     FORMAT_DATE('%B', date_actual) AS month_name,
     FORMAT_DATE('%b', date_actual) AS month_name_short,
     FORMAT_DATE('%Y-%m', date_actual) AS month_year,
 
-    -- Week attributes
     EXTRACT(WEEK FROM date_actual) AS week_of_year,
     EXTRACT(ISOWEEK FROM date_actual) AS iso_week,
     FORMAT_DATE('%G-W%V', date_actual) AS iso_year_week,
 
-    -- Day attributes
     EXTRACT(DAY FROM date_actual) AS day_of_month,
     EXTRACT(DAYOFWEEK FROM date_actual) AS day_of_week,
 
@@ -58,7 +53,6 @@ SELECT
 
     EXTRACT(DAYOFWEEK FROM date_actual) NOT IN (1, 7) AS is_weekday,
 
-    -- Olist dataset coverage
     date_actual BETWEEN DATE '2016-09-01' AND DATE '2018-09-03'
         AS is_in_dataset_range,
 
@@ -114,7 +108,6 @@ SELECT
         ELSE 'Regular'
     END AS retail_season,
 
-    -- Day and period attributes
     EXTRACT(DAYOFYEAR FROM date_actual) AS day_of_year,
 
     EXTRACT(
@@ -127,7 +120,6 @@ SELECT
         )
     ) AS days_in_month,
 
-    -- First day of each period
     DATE_TRUNC(date_actual, MONTH) AS first_day_of_month,
     DATE_TRUNC(date_actual, QUARTER) AS first_day_of_quarter,
     DATE_TRUNC(date_actual, YEAR) AS first_day_of_year,

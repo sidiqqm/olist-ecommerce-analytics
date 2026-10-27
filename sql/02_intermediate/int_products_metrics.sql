@@ -1,3 +1,6 @@
+-- PRODUCT TRANSACTION METRICS
+-- GRAIN: 1 row per product_id
+
 CREATE OR REPLACE VIEW
   `olist-ecommerce-analytics-1.olist_intermediate.int_products_metrics`
 AS
@@ -5,20 +8,9 @@ AS
 WITH 
 product_metrics AS (
 
-    -- ========================================================
-    -- 2. PRODUCT TRANSACTION METRICS
-    -- GRAIN: 1 row per product_id
-    -- SOURCE: int_order_details
-    -- PURPOSE: Performa penjualan, pengiriman, review,
-    --          dan pembayaran produk
-    -- ========================================================
 
     SELECT
         product_id,
-
-        -- ----------------------------------------------------
-        -- A. SALES PERFORMANCE
-        -- ----------------------------------------------------
 
         COUNT(*) AS total_units_sold,
 
@@ -52,10 +44,6 @@ product_metrics AS (
             ),
             2
         ) AS free_shipping_rate_pct,
-
-        -- ----------------------------------------------------
-        -- B. DELIVERY PERFORMANCE
-        -- ----------------------------------------------------
 
         ROUND(
             AVG(
@@ -96,10 +84,6 @@ product_metrics AS (
         COUNTIF(is_order_date_anomaly = TRUE)
             AS delivery_anomaly_items,
 
-        -- ----------------------------------------------------
-        -- C. REVIEW PERFORMANCE
-        -- ----------------------------------------------------
-
         ROUND(AVG(review_score), 2)
             AS avg_review_score,
 
@@ -128,10 +112,6 @@ product_metrics AS (
             ),
             2
         ) AS review_response_rate_pct,
-
-        -- ----------------------------------------------------
-        -- D. PAYMENT BEHAVIOR
-        -- ----------------------------------------------------
 
         COUNTIF(used_voucher = TRUE)
             AS voucher_order_items,
@@ -170,13 +150,6 @@ product_metrics AS (
 ),
 
 product_enriched AS (
-
-    -- ========================================================
-    -- 3. ENRICH PRODUCT
-    -- Menggabungkan atribut dasar dan metrik transaksi
-    -- GRAIN: 1 row per product_id
-    -- ========================================================
-
     SELECT
         p.*,
 
@@ -273,9 +246,7 @@ product_enriched AS (
         ON p.product_id = pm.product_id
 )
 
--- ============================================================
--- 4. FINAL PRODUCT INTERMEDIATE
--- ============================================================
+-- FINAL PRODUCT INTERMEDIATE
 
 SELECT
     pe.*,

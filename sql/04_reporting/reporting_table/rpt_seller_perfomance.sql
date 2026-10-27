@@ -6,7 +6,6 @@ AS
 
 WITH
 
-
 -- GRAIN: 1 row per seller_id + order_id
 seller_review_base AS (
     SELECT
@@ -52,7 +51,6 @@ seller_activity AS (
     WHERE is_revenue_generating IS TRUE
     GROUP BY seller_id
 ),
-
 
 -- GRAIN: 1 row per seller_id
 seller_report_base AS (
@@ -119,11 +117,10 @@ seller_ranked AS (
     FROM seller_report_base
 )
 
--- GRAIN: 1 row per seller_id
+-- 1 row per seller_id
 SELECT
     sr.seller_id,
 
-    -- Sales metrics
     sr.total_orders,
     sr.total_items_sold,
     sr.unique_products,
@@ -132,26 +129,21 @@ SELECT
     ROUND(sr.total_gmv, 2) AS total_gmv,
     sr.avg_item_price,
 
-    -- Review metrics
     sr.avg_review_score,
     sr.negative_review_count,
     sr.total_reviews,
 
-    -- Delivery metrics
     sr.seller_otdr_pct,
     sr.avg_delivery_days,
 
-    -- Activity metrics
     sr.active_months,
     sr.first_sale_date,
     sr.last_sale_date,
     sr.is_active_seller,
 
-    -- Ranking metrics
     sr.revenue_rank,
     sr.cumulative_gmv_pct,
 
-    -- Seller attributes
     ds.seller_city,
     ds.seller_state,
     ds.seller_region,
@@ -160,10 +152,8 @@ SELECT
     ds.seller_longitude,
     ds.is_sao_paulo_seller,
 
-    -- Tier from intermediate: one consistent source
     sr.seller_tier,
 
-    -- Composite performance score
     CASE
         WHEN sr.avg_review_score IS NULL
           OR sr.seller_otdr_pct IS NULL

@@ -1,9 +1,3 @@
--- TABLE: olist_reporting.rpt_customer_cohort
--- PURPOSE: Monthly customer cohort retention analysis
--- GRAIN: 1 row per cohort_month x period_number
--- COHORT: First revenue-generating purchase month
--- RETENTION: Active customers / original cohort size
-
 CREATE OR REPLACE TABLE
     `olist-ecommerce-analytics-1.olist_reporting.rpt_customer_cohort`
 AS
@@ -92,7 +86,6 @@ cohort_retention AS (
         period_number
 ),
 
--- 5. REPORTING HORIZON
 reporting_horizon AS (
     SELECT
         MAX(DATE_TRUNC(purchase_date, MONTH))
@@ -102,7 +95,6 @@ reporting_horizon AS (
       AND purchase_date IS NOT NULL
 ),
 
--- 6. GENERATE ALL OBSERVABLE COHORT PERIODS
 cohort_periods AS (
     SELECT
         cs.cohort_month,
@@ -128,8 +120,6 @@ cohort_periods AS (
         )
     ) AS period_number
 )
-
--- 7. FINAL REPORT
 
 SELECT
     cp.cohort_month,
@@ -159,10 +149,3 @@ LEFT JOIN cohort_retention AS cr
 ORDER BY
     cp.cohort_month,
     cp.period_number;
-
--- Tujuan : retention_pct yang berarti butuh active_customers, activity_month,
---  dan cohort_size sebagai denominator
-
--- 1. buat base customer cohort yang akan digunakan di seluruh subquery
--- 2. customer_activity: cari active month dan periode bulan
--- 3. cohort size : cari jumlah customer pada periode bulan tersebut

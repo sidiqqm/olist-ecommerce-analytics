@@ -117,15 +117,12 @@ order_base AS (
 )
 
 SELECT
-    -- ORDER IDENTIFIER
     ob.order_id,
 
-    -- CUSTOMER IDENTIFIERS
     ob.customer_id,
     ob.customer_unique_id,
     ob.customer_zip_code_prefix,
 
-    -- ORDER ATTRIBUTES
     ob.order_status,
     ob.is_revenue_generating,
     ob.is_delivered,
@@ -134,14 +131,12 @@ SELECT
     ob.is_ontime_delivery,
     ob.is_order_date_anomaly,
 
-    -- TIMESTAMPS
     ob.order_purchase_timestamp,
     ob.order_approved_at,
     ob.order_delivered_carrier_date,
     ob.order_delivered_customer_date,
     ob.order_estimated_delivery_date,
 
-    -- DATE ATTRIBUTES
     ob.purchase_date,
     ob.purchase_year,
     ob.purchase_month,
@@ -150,31 +145,26 @@ SELECT
     ob.purchase_year_month,
     ob.purchase_year_quarter,
 
-    -- DELIVERY METRICS
     ob.purchase_to_delivery_days,
     ob.delivery_vs_estimated_days,
     ob.purchase_to_approved_hours,
 
-    -- PAYMENT ATTRIBUTES
     ob.primary_payment_type,
     ob.max_installments,
     ob.used_voucher,
     ob.is_split_payment,
     ob.total_payment_value,
 
-    -- REVIEW ATTRIBUTES
     ob.review_score,
     ob.review_sentiment,
     ob.review_score_label,
     ob.review_has_comment,
 
-    -- FINANCIAL MEASURES
     ob.item_count,
     ob.total_price,
     ob.total_freight_value,
     ob.total_gmv,
 
-    -- ORDER COMPOSITION
     ob.unique_sellers_in_order,
     ob.unique_products_in_order,
     ob.unique_categories_in_order,
@@ -205,7 +195,6 @@ SELECT
         ELSE 'Unknown'
     END AS customer_type,
 
-    -- CUSTOMER SEGMENT ATTRIBUTES
     dc.rfm_segment,
     dc.clv_tier
 

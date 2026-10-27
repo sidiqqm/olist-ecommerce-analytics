@@ -1,3 +1,6 @@
+-- PRODUCT DIMENSION TABLE
+-- GRAIN: 1 row per product_id
+
 CREATE OR REPLACE TABLE
   `olist-ecommerce-analytics-1.olist_mart.dim_products`
 AS
@@ -5,19 +8,16 @@ AS
 SELECT
     p.product_id,
 
-    -- Product category
     p.product_category_name,
     cat.product_category_name_english,
     cat.product_super_category,
     p.is_unknown_category,
 
-    -- Listing attributes
     p.product_name_length,
     p.product_description_length,
     p.product_photos_qty,
     p.has_photos,
 
-    -- Physical attributes
     p.has_complete_dimensions,
     p.has_weight,
     p.product_weight_g,
@@ -27,7 +27,6 @@ SELECT
     p.product_width_cm,
     p.volumetric_weight_kg,
 
-    -- Listing quality classification
     p.listing_quality_score
 
 FROM

@@ -4,12 +4,6 @@ CREATE OR REPLACE VIEW
 AS
 WITH product_base AS (
 
-    -- ========================================================
-    -- 1. BASE PRODUCT
-    -- GRAIN: 1 row per product_id
-    -- PURPOSE: Atribut dan karakteristik dasar produk
-    -- ========================================================
-
     SELECT
         product_id,
         product_category_name,
