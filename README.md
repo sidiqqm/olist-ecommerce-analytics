@@ -19,7 +19,7 @@ besar seperti Americanas, Shoptime, Submarino, dan Casas Bahia.
 - Ketika ada order, seller bertanggung jawab atas fulfillment
 - Olist mengelola payment processing dan hubungan dengan marketplace
 
-**Konteks Pasar:**
+**Konteks:**
 - Brazil adalah pasar e-commerce terbesar di Amerika Latin
 - Periode dataset (2016–2018) merupakan fase pertumbuhan agresif e-commerce Brazil
 - Penetrasi internet Brazil tumbuh dari ~60% (2016) ke ~70% (2018)
@@ -118,23 +118,7 @@ mengoptimalkan ekosistem seller.
 
 ---
 
-## 7. Success Metrics
-
-# Success Metrics & Acceptance Criteria
-
-| ID | Kriteria | Target |
-|---|---|---|
-| **SM-01** | Seluruh 15 business questions terjawab dengan data | **100%** |
-| **SM-02** | Dashboard dapat dibaca tanpa penjelasan verbal | Uji dengan stakeholder non-teknis |
-| **SM-03** | Minimal 10 business insight dengan format lengkap | **≥ 10 insight** |
-| **SM-04** | Minimal 10 actionable recommendation | **≥ 10 rekomendasi** |
-| **SM-05** | Forecasting memiliki error MAPE < 20% | **MAPE < 20%** |
-| **SM-06** | Data quality coverage > 95% untuk kolom kritis | **> 95%** |
-| **SM-07** | Executive Summary dapat dipahami non-teknis | **Tidak ada jargon teknis** |
-
----
-
-## 8. Scope
+## 7. Scope
 
 ### In Scope
 - Orders: Sep 2016 – Sep 2018
